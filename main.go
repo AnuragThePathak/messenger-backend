@@ -44,8 +44,7 @@ func main() {
 	}()
 
 	// Run the server
-	err := server.ListenAndServe()
-	if err != nil && err != http.ErrServerClosed {
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 

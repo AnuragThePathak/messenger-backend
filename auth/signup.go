@@ -21,8 +21,7 @@ func Signup() http.Handler {
 		var user user
 		json.NewDecoder(r.Body).Decode(&user)
 
-		issues := dataValidation(user)
-		if len(issues) != 0 {
+		if issues := dataValidation(user); len(issues) != 0 {
 			errorResponse := struct {
 				Error []string `json:"error"`
 			}{
@@ -33,6 +32,7 @@ func Signup() http.Handler {
 			json.NewEncoder(rw).Encode(&errorResponse)
 			return
 		}
+
 	})
 
 	return r
