@@ -7,18 +7,20 @@ import (
 	"regexp"
 	"unicode"
 
+	"messenger-backend/models"
+
 	"github.com/go-chi/chi/v5"
 )
 
-func Signup() http.Handler {
+func Signup(s *models.Service) http.Handler {
 	r := chi.NewRouter()
 
-	r.Get("/", func(rw http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(rw, "This is signup page.")
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "This is signup page.")
 	})
 
-	r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-		var user user
+	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
+		var user models.User
 		json.NewDecoder(r.Body).Decode(&user)
 
 		if issues := dataValidation(user); len(issues) != 0 {
@@ -28,17 +30,16 @@ func Signup() http.Handler {
 				Error: issues,
 			}
 
-			rw.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(rw).Encode(&errorResponse)
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(&errorResponse)
 			return
 		}
-
 	})
 
 	return r
 }
 
-func dataValidation(user user) []string {
+func dataValidation(user models.User) []string {
 	var issues []string
 
 	if ok, _ := regexp.MatchString(`^([\w\.\_]{2,10})@(\w{1,}).([a-z]{2,4})$`,

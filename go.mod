@@ -4,11 +4,19 @@ go 1.17
 
 require github.com/go-chi/chi/v5 v5.0.7
 
-require github.com/pkg/errors v0.8.1 // indirect
+require (
+	github.com/pkg/errors v0.8.1 // indirect
+	go.uber.org/atomic v1.6.0 // indirect
+	go.uber.org/multierr v1.5.0 // indirect
+	go.uber.org/zap v1.13.0 // indirect
+	golang.org/x/lint v0.0.0-20190930215403-16217165b5de // indirect
+	golang.org/x/tools v0.0.0-20200103221440-774c71fcf114 // indirect
+)
 
 require (
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.11.0 // indirect
+	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.2.0 // indirect

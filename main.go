@@ -8,10 +8,29 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"messenger-backend/database"
+	"messenger-backend/models"
+
+	"github.com/jackc/pgx/v4/log/zapadapter"
 )
 
 func main() {
-	server := &http.Server{Addr: ":8080", Handler: server()}
+	pgxLogLevel, err := database.LogLevelFromEnv()
+	if err!=nil {
+		log.Fatal(err)
+	}
+
+	pgPool, err := database.NewPgxPool(context.Background(), os.Getenv("DB_URL"), 
+	zapadapter.NewLogger(database.GetLogger()), pgxLogLevel)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer pgPool.Close()
+
+	server := &http.Server{Addr: ":8080", Handler: server(models.NewService(
+		&database.DB{Postgres: pgPool},
+	))}
 
 	// Server run context
 	serverCtx, serverStopCtx := context.WithCancel(context.Background())
