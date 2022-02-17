@@ -19,7 +19,7 @@ type DB struct {
 var _ models.DB = (*DB)(nil)
 
 func (db *DB) CreateAccount(ctx context.Context, user models.User) error {
-	const sql = `INSERT INTO user ("username", "name", "email", "password")
+	const sql = `INSERT INTO users ("username", "name", "email", "hash")
 	 VALUES ($1, $2, $3, $4);`
 
 	switch _, err := db.Postgres.Exec(ctx, sql, user.Username, user.Name,
@@ -46,12 +46,14 @@ func (db *DB) accountPgError(err error) error {
 	}
 	if pgErr.Code == pgerrcode.CheckViolation {
 		switch pgErr.ConstraintName {
-		case "product_id_check":
-			return errors.New("invalid product ID")
-		case "product_name_check":
-			return errors.New("invalid product name")
-		case "product_price_check":
-			return errors.New("invalid price")
+		case "username_check":
+			return errors.New("invalid username")
+		case "name_check":
+			return errors.New("invalid name")
+		case "email_check":
+			return errors.New("invalid email")
+		case "hash_check":
+			return errors.New("invalid hash")
 		}
 	}
 	return nil

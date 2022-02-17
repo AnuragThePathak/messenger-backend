@@ -51,3 +51,29 @@ func GetLogger() *zap.Logger {
 	}
 	return logger
 }
+
+func InitialSetup(pool *pgxpool.Pool) {
+	// addExtensions(pool)
+	createUserTable(pool)
+}
+
+// func addExtensions(pool *pgxpool.Pool)  {
+// 	const sql = `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`
+// 	if _, err := pool.Exec(context.Background(), sql); err != nil {
+// 		log.Fatal(err)
+// 	}
+// }
+
+func createUserTable(pool *pgxpool.Pool) {
+	const sql = `CREATE TABLE IF NOT EXISTS users (
+		id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+		username VARCHAR (20) NOT NULL UNIQUE,
+		name VARCHAR (40) NOT NULL,
+		email VARCHAR (30) NOT NULL UNIQUE,
+		hash TEXT NOT NULL
+	);`
+
+	if _, err := pool.Exec(context.Background(), sql); err != nil {
+		log.Fatal(err)
+	}
+}

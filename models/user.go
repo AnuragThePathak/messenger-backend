@@ -21,6 +21,6 @@ type DB interface {
 	CreateAccount(ctx context.Context, user User) error
 }
 
-func (s *Service) CreateAccount(ctx context.Context, user User) (error error) {
+func (s *Service) CreateAccount(ctx context.Context, user User) (err error) {
 	return s.db.CreateAccount(ctx, user)
 }

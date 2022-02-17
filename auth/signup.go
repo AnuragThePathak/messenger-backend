@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -33,6 +34,17 @@ func Signup(s *models.Service) http.Handler {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(&errorResponse)
 			return
+		}
+
+		err := s.CreateAccount(r.Context(), user)
+
+		switch {
+		case err == context.Canceled, err == context.DeadlineExceeded:
+			return
+		case err != nil:
+			w.WriteHeader(http.StatusInternalServerError)
+		default:
+			w.Write([]byte("Succesfully created account."))
 		}
 	})
 

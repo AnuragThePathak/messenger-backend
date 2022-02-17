@@ -17,16 +17,18 @@ import (
 
 func main() {
 	pgxLogLevel, err := database.LogLevelFromEnv()
-	if err!=nil {
+	if err != nil {
 		log.Fatal(err)
 	}
 
-	pgPool, err := database.NewPgxPool(context.Background(), os.Getenv("DB_URL"), 
-	zapadapter.NewLogger(database.GetLogger()), pgxLogLevel)
+	pgPool, err := database.NewPgxPool(context.Background(), os.Getenv("DB_URL"),
+		zapadapter.NewLogger(database.GetLogger()), pgxLogLevel)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer pgPool.Close()
+
+	go database.InitialSetup(pgPool)
 
 	server := &http.Server{Addr: ":8080", Handler: server(models.NewService(
 		&database.DB{Postgres: pgPool},
