@@ -43,6 +43,7 @@ func Signup(s *models.Service) http.Handler {
 			return
 		case err != nil:
 			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println(err)
 		default:
 			w.Write([]byte("Succesfully created account."))
 		}

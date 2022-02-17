@@ -44,17 +44,5 @@ func (db *DB) accountPgError(err error) error {
 	if pgErr.Code == pgerrcode.UniqueViolation {
 		return errors.New("account already exists")
 	}
-	if pgErr.Code == pgerrcode.CheckViolation {
-		switch pgErr.ConstraintName {
-		case "username_check":
-			return errors.New("invalid username")
-		case "name_check":
-			return errors.New("invalid name")
-		case "email_check":
-			return errors.New("invalid email")
-		case "hash_check":
-			return errors.New("invalid hash")
-		}
-	}
 	return nil
 }
