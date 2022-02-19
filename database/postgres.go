@@ -9,6 +9,7 @@ import (
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -17,24 +18,6 @@ type DB struct {
 }
 
 var _ models.DB = (*DB)(nil)
-
-func (db *DB) CreateAccount(ctx context.Context, user models.User) error {
-	const sql = `INSERT INTO users ("username", "name", "email", "hash")
-	 VALUES ($1, $2, $3, $4);`
-
-	switch _, err := db.Postgres.Exec(ctx, sql, user.Username, user.Name,
-		user.Email, user.Password); {
-	case errors.Is(err, context.Canceled), errors.Is(err, context.DeadlineExceeded):
-		return err
-	case err != nil:
-		if sqlErr := db.accountPgError(err); sqlErr != nil {
-			return sqlErr
-		}
-		log.Printf("cannot create acoount on database: %v\n", err)
-		return errors.New("cannot create account on database")
-	}
-	return nil
-}
 
 func (db *DB) accountPgError(err error) error {
 	var pgErr *pgconn.PgError
@@ -45,4 +28,42 @@ func (db *DB) accountPgError(err error) error {
 		return errors.New("account already exists")
 	}
 	return nil
+}
+
+func (db *DB) CreateAccount(ctx context.Context, user models.User) error {
+	const query = `INSERT INTO users ("username", "name", "email", "hash")
+	 VALUES ($1, $2, $3, $4);`
+
+	switch _, err := db.Postgres.Exec(ctx, query, user.Username, user.Name,
+		user.Email, user.Password); {
+	case errors.Is(err, context.Canceled), errors.Is(err, 
+		context.DeadlineExceeded):
+		return err
+	case err != nil:
+		if sqlErr := db.accountPgError(err); sqlErr != nil {
+			return sqlErr
+		}
+		log.Printf("cannot create acoount on database: %v\n", err)
+		return errors.New("cannot create account on database")
+	default:
+		return nil
+	}
+}
+
+func (db *DB) IfEmailExists(ctx context.Context, email string) (bool, error) {
+	const query = `SELECT EXISTS(SELECT email FROM users WHERE email = $1)`
+	var exists bool
+
+	switch err := db.Postgres.QueryRow(ctx,query, email).Scan(&exists); {
+	case errors.Is(err, context.Canceled), errors.Is(err, 
+		context.DeadlineExceeded):
+		return false, err
+	case errors.Is(err, pgx.ErrNoRows):
+		return false, errors.New("no response from database")
+	case err != nil:
+		log.Println(err)
+		return false, errors.New("can't make query")
+	default:
+		return exists, nil
+	}
 }

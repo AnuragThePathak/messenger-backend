@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -36,14 +37,24 @@ func Signup(s *models.Service) http.Handler {
 			return
 		}
 
-		err := s.CreateAccount(r.Context(), user)
-
-		switch {
-		case err == context.Canceled, err == context.DeadlineExceeded:
+		switch exists, err := s.IfEmailExists(r.Context(), user.Email); {
+		case errors.Is(err, context.Canceled), errors.Is(err,
+			context.DeadlineExceeded):
 			return
 		case err != nil:
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Println(err)
+			return
+		case exists:
+			w.Write([]byte("Email not available"))
+		}
+
+		switch err := s.CreateAccount(r.Context(), user); {
+		case errors.Is(err, context.Canceled), errors.Is(err,
+			context.DeadlineExceeded):
+			return
+		case err != nil:
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		default:
 			w.Write([]byte("Succesfully created account."))
 		}

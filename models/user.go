@@ -2,14 +2,6 @@ package models
 
 import "context"
 
-func NewService(db DB) *Service {
-	return &Service{db: db}
-}
-
-type Service struct {
-	db DB
-}
-
 type User struct {
 	Username string `json:"username"`
 	Name     string `json:"name"`
@@ -17,10 +9,10 @@ type User struct {
 	Password string `json:"password"`
 }
 
-type DB interface {
-	CreateAccount(ctx context.Context, user User) error
-}
-
 func (s *Service) CreateAccount(ctx context.Context, user User) (err error) {
 	return s.db.CreateAccount(ctx, user)
+}
+
+func (s *Service) IfEmailExists(ctx context.Context, email string) (bool, error) {
+	return s.db.IfEmailExists(ctx, email)
 }

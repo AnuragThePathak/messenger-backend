@@ -21,7 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pgPool, err := database.NewPgxPool(context.Background(), os.Getenv("DB_URL"),
+	pgPool, err := database.NewPgxPool(context.Background(), "",
 		zapadapter.NewLogger(database.GetLogger()), pgxLogLevel)
 	if err != nil {
 		log.Fatal(err)
