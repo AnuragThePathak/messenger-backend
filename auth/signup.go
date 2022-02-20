@@ -12,6 +12,7 @@ import (
 	"messenger-backend/models"
 
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Signup(s *models.Service) http.Handler {
@@ -44,6 +45,18 @@ func Signup(s *models.Service) http.Handler {
 			return
 		}
 
+		switch hashedBytes, err :=
+			bcrypt.GenerateFromPassword([]byte(user.Password), 10); {
+		case errors.Is(err, bcrypt.ErrHashTooShort):
+			w.Write([]byte("Password too short."))
+			return
+		case err != nil:
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		default:
+			user.Password = string(hashedBytes)
+		}
+
 		switch err := s.CreateAccount(r.Context(), user); {
 		case errors.Is(err, context.Canceled), errors.Is(err,
 			context.DeadlineExceeded):
@@ -59,7 +72,7 @@ func Signup(s *models.Service) http.Handler {
 	return r
 }
 
-func checkForDuplicate(s *models.Service, r *http.Request, w *http.ResponseWriter, 
+func checkForDuplicate(s *models.Service, r *http.Request, w *http.ResponseWriter,
 	credentialType string, credential string) bool {
 	switch exists, err := s.IfEmailOrUsernameExists(r.Context(), credentialType,
 		credential); {
