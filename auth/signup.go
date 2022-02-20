@@ -9,21 +9,21 @@ import (
 	"regexp"
 	"unicode"
 
-	"messenger-backend/models"
+	"messenger-backend/data"
 
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Signup(s *models.Service) http.Handler {
+func Signup(s *data.Service) http.Handler {
 	r := chi.NewRouter()
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "This is signup page.")
+		w.Write([]byte("This is signup page."))
 	})
 
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		var user models.User
+		var user data.User
 		json.NewDecoder(r.Body).Decode(&user)
 
 		if issues := dataValidation(user); len(issues) != 0 {
@@ -72,7 +72,7 @@ func Signup(s *models.Service) http.Handler {
 	return r
 }
 
-func checkForDuplicate(s *models.Service, r *http.Request, w *http.ResponseWriter,
+func checkForDuplicate(s *data.Service, r *http.Request, w *http.ResponseWriter,
 	credentialType string, credential string) bool {
 	switch exists, err := s.IfEmailOrUsernameExists(r.Context(), credentialType,
 		credential); {
@@ -91,7 +91,7 @@ func checkForDuplicate(s *models.Service, r *http.Request, w *http.ResponseWrite
 	}
 }
 
-func dataValidation(user models.User) []string {
+func dataValidation(user data.User) []string {
 	var issues []string
 
 	if ok, _ := regexp.MatchString(`^([\w\.\_]{2,10})@(\w{1,}).([a-z]{2,4})$`,

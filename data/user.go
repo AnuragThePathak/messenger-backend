@@ -1,4 +1,4 @@
-package models
+package data
 
 import "context"
 
@@ -16,4 +16,9 @@ func (s *Service) CreateAccount(ctx context.Context, user User) error {
 func (s *Service) IfEmailOrUsernameExists(ctx context.Context,
 	credentialType string, credential string) (bool, error) {
 	return s.db.IfEmailOrUsernameExists(ctx, credentialType, credential)
+}
+
+func (s *Service) GetHashByCredential(ctx context.Context,
+	credentialType string, credential string) (string, error) {
+	return s.db.GetHashByCredential(ctx, credentialType, credential)
 }

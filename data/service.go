@@ -1,4 +1,4 @@
-package models
+package data
 
 import "context"
 
@@ -15,4 +15,7 @@ type DB interface {
 
 	IfEmailOrUsernameExists(ctx context.Context, credentialType string,
 		credential string) (bool, error)
+
+	GetHashByCredential(ctx context.Context, credentialType string,
+		credential string) (string, error)
 }

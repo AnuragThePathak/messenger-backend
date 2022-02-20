@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"messenger-backend/models"
+	"messenger-backend/data"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -18,7 +18,7 @@ type DB struct {
 	Postgres *pgxpool.Pool
 }
 
-var _ models.DB = (*DB)(nil)
+var _ data.DB = (*DB)(nil)
 
 func (db *DB) accountPgError(err error) error {
 	var pgErr *pgconn.PgError
@@ -31,7 +31,7 @@ func (db *DB) accountPgError(err error) error {
 	return nil
 }
 
-func (db *DB) CreateAccount(ctx context.Context, user models.User) error {
+func (db *DB) CreateAccount(ctx context.Context, user data.User) error {
 	const query = `INSERT INTO users ("username", "name", "email", "hash")
 	 VALUES ($1, $2, $3, $4);`
 
@@ -60,14 +60,30 @@ func (db *DB) IfEmailOrUsernameExists(ctx context.Context, credentialType string
 	switch err := db.Postgres.QueryRow(ctx, query, credential).
 		Scan(&exists); {
 	case errors.Is(err, context.Canceled), errors.Is(err,
-		context.DeadlineExceeded):
+		context.DeadlineExceeded), errors.Is(err, pgx.ErrNoRows):
 		return false, err
-	case errors.Is(err, pgx.ErrNoRows):
-		return false, errors.New("no response from database")
 	case err != nil:
 		log.Println(err)
 		return false, errors.New("can't make query")
 	default:
 		return exists, nil
+	}
+}
+
+func (db *DB) GetHashByCredential(ctx context.Context, credentialType string,
+	credential string) (string, error) {
+	query := fmt.Sprintf(`SELECT hash FROM users  WHERE %s = $1`, credentialType)
+	var hash string
+
+	switch err := db.Postgres.QueryRow(ctx, query, credential).
+		Scan(&hash); {
+	case errors.Is(err, context.Canceled), errors.Is(err,
+		context.DeadlineExceeded), errors.Is(err, pgx.ErrNoRows):
+		return "", err
+	case err != nil:
+		log.Println(err)
+		return "", errors.New("can't make query")
+	default:
+		return hash, nil
 	}
 }

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"messenger-backend/database"
-	"messenger-backend/models"
+	"messenger-backend/data"
 
 	"github.com/jackc/pgx/v4/log/zapadapter"
 )
@@ -30,7 +30,7 @@ func main() {
 
 	go database.InitialSetup(pgPool)
 
-	server := &http.Server{Addr: ":8080", Handler: server(models.NewService(
+	server := &http.Server{Addr: ":8080", Handler: server(data.NewService(
 		&database.DB{Postgres: pgPool},
 	))}
 
