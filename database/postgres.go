@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 
 	"messenger-backend/models"
@@ -36,7 +37,7 @@ func (db *DB) CreateAccount(ctx context.Context, user models.User) error {
 
 	switch _, err := db.Postgres.Exec(ctx, query, user.Username, user.Name,
 		user.Email, user.Password); {
-	case errors.Is(err, context.Canceled), errors.Is(err, 
+	case errors.Is(err, context.Canceled), errors.Is(err,
 		context.DeadlineExceeded):
 		return err
 	case err != nil:
@@ -50,12 +51,15 @@ func (db *DB) CreateAccount(ctx context.Context, user models.User) error {
 	}
 }
 
-func (db *DB) IfEmailExists(ctx context.Context, email string) (bool, error) {
-	const query = `SELECT EXISTS(SELECT email FROM users WHERE email = $1)`
+func (db *DB) IfEmailOrUsernameExists(ctx context.Context, credentialType string,
+	credential string) (bool, error) {
+	query := fmt.Sprintf(`SELECT EXISTS(SELECT 1 FROM users 
+		WHERE %s = $1)`, credentialType)
 	var exists bool
 
-	switch err := db.Postgres.QueryRow(ctx,query, email).Scan(&exists); {
-	case errors.Is(err, context.Canceled), errors.Is(err, 
+	switch err := db.Postgres.QueryRow(ctx, query, credential).
+		Scan(&exists); {
+	case errors.Is(err, context.Canceled), errors.Is(err,
 		context.DeadlineExceeded):
 		return false, err
 	case errors.Is(err, pgx.ErrNoRows):

@@ -15,6 +15,7 @@ require (
 )
 
 require (
+	github.com/hatch-studio/pgtools v0.0.1
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.11.0
 	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451

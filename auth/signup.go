@@ -37,15 +37,11 @@ func Signup(s *models.Service) http.Handler {
 			return
 		}
 
-		switch exists, err := s.IfEmailExists(r.Context(), user.Email); {
-		case errors.Is(err, context.Canceled), errors.Is(err,
-			context.DeadlineExceeded):
+		if checkForDuplicate(s, r, &w, "email", user.Email) {
 			return
-		case err != nil:
-			w.WriteHeader(http.StatusInternalServerError)
+		}
+		if checkForDuplicate(s, r, &w, "username", user.Username) {
 			return
-		case exists:
-			w.Write([]byte("Email not available"))
 		}
 
 		switch err := s.CreateAccount(r.Context(), user); {
@@ -61,6 +57,25 @@ func Signup(s *models.Service) http.Handler {
 	})
 
 	return r
+}
+
+func checkForDuplicate(s *models.Service, r *http.Request, w *http.ResponseWriter, 
+	credentialType string, credential string) bool {
+	switch exists, err := s.IfEmailOrUsernameExists(r.Context(), credentialType,
+		credential); {
+	case errors.Is(err, context.Canceled), errors.Is(err,
+		context.DeadlineExceeded):
+		return true
+	case err != nil:
+		(*w).WriteHeader(http.StatusInternalServerError)
+		return true
+	case exists:
+		message := fmt.Sprintf("%s not available", credentialType)
+		(*w).Write([]byte(message))
+		return true
+	default:
+		return false
+	}
 }
 
 func dataValidation(user models.User) []string {

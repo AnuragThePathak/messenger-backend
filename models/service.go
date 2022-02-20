@@ -13,5 +13,6 @@ type Service struct {
 type DB interface {
 	CreateAccount(ctx context.Context, user User) error
 
-	IfEmailExists(ctx context.Context, email string) (bool, error)
+	IfEmailOrUsernameExists(ctx context.Context, credentialType string,
+		credential string) (bool, error)
 }

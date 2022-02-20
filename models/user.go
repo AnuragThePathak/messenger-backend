@@ -9,10 +9,11 @@ type User struct {
 	Password string `json:"password"`
 }
 
-func (s *Service) CreateAccount(ctx context.Context, user User) (err error) {
+func (s *Service) CreateAccount(ctx context.Context, user User) error {
 	return s.db.CreateAccount(ctx, user)
 }
 
-func (s *Service) IfEmailExists(ctx context.Context, email string) (bool, error) {
-	return s.db.IfEmailExists(ctx, email)
+func (s *Service) IfEmailOrUsernameExists(ctx context.Context,
+	credentialType string, credential string) (bool, error) {
+	return s.db.IfEmailOrUsernameExists(ctx, credentialType, credential)
 }
