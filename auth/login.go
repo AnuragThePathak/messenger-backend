@@ -24,10 +24,26 @@ func Login(s *data.Service) http.Handler {
 			Credential string `json:"credential"`
 			Password   string `json:"password"`
 		}
+		var credentialType string
 
 		json.NewDecoder(r.Body).Decode(&user)
 
-		hash, err := s.GetHashByCredential(r.Context(), "email", user.Credential)
+		if ok, _ := isUsernameFormat(user.Credential); ok {
+			credentialType = "username"
+		} else if ok, _ := isEmailFormat(user.Credential); ok {
+			credentialType = "email"
+		} else {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		if ok, _ := isPasswordFormat(user.Password); !ok {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		hash, err := s.GetHashByCredential(r.Context(), credentialType,
+			user.Credential)
 		switch {
 		case errors.Is(err, context.Canceled), errors.Is(err,
 			context.DeadlineExceeded):
@@ -35,7 +51,7 @@ func Login(s *data.Service) http.Handler {
 		case errors.Is(err, pgx.ErrNoRows):
 			w.Write([]byte("Couldn't find your account."))
 			return
-		case err!= nil:
+		case err != nil:
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
