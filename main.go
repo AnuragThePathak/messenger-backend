@@ -9,9 +9,11 @@ import (
 	"syscall"
 	"time"
 
-	"messenger-backend/database"
 	"messenger-backend/data"
+	"messenger-backend/database"
+	"messenger-backend/session"
 
+	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v4/log/zapadapter"
 )
 
@@ -32,7 +34,8 @@ func main() {
 
 	server := &http.Server{Addr: ":8080", Handler: server(data.NewService(
 		&database.DB{Postgres: pgPool},
-	))}
+	), session.NewSessionService(
+		sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))))}
 
 	// Server run context
 	serverCtx, serverStopCtx := context.WithCancel(context.Background())

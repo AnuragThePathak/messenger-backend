@@ -1,6 +1,8 @@
 package data
 
-import "context"
+import (
+	"context"
+)
 
 func NewService(db DB) *Service {
 	return &Service{db: db}

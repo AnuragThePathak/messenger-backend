@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/gorilla/securecookie v1.1.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
@@ -15,6 +16,7 @@ require (
 )
 
 require (
+	github.com/gorilla/sessions v1.2.1
 	github.com/hatch-studio/pgtools v0.0.1
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.11.0
